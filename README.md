@@ -34,3 +34,10 @@ Example: ``docker run -d -p 8080:8080 pierreschwang/bpmn2svg:development`` (Uses
 - ``POST /``
   - Body must contain raw XML of BPMN model. **or**
   - Pass file via form-data field.
+
+### Examples / Screenshots:
+Using POST-Request and bpmn content as request body:
+![](.github/assets/postman-post-xml-raw.png)
+
+Using GET-Request with base64 encoded xml in the path:
+![](.github/assets/postman-get-base64.png)
