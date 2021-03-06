@@ -59,7 +59,7 @@ export default class Logger {
         });
     }
 
-    private static getLogLevel(): string {
+    public static getLogLevel(): string {
         let level = (process.env.LOG_LEVEL || 'info').toLowerCase();
         if (['error', 'warn', 'info', 'verbose', 'debug', 'silly'].indexOf(level) === -1)
             level = 'info';

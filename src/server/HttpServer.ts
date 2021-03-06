@@ -3,7 +3,8 @@ import BpmnToSvg from "../BpmnToSvg";
 import {IndexPostRoute} from "./routes/IndexPostRoute";
 import {IndexGetRoute} from "./routes/IndexGetRoute";
 import bodyParser from 'body-parser';
-
+import expressFileUpload from "express-fileupload";
+import Logger from "../logging/Logger";
 
 export default class HttpServer {
 
@@ -47,6 +48,9 @@ export default class HttpServer {
                 'application/xml',
                 'text/xml'
             ]
-        }))
+        }));
+        this.server.use(expressFileUpload({
+            debug: Logger.getLogLevel() === 'debug'
+        }));
     }
 }

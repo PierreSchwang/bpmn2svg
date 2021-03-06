@@ -7,8 +7,14 @@ export const IndexPostRoute = (application: BpmnToSvg): Handler => {
     return async (req, res) => {
         let xml;
 
-        if (req.files && req.files[0]) {
-            const file = req.files[0];
+        let file;
+        for(const fileName in req.files) {
+            file = (req.files[fileName] as UploadedFile);
+            break;
+        }
+
+        if (file) {
+            application.getLogger().debug((file as UploadedFile).name);
             xml = (file as UploadedFile).data.toString('utf-8');
         }
 
