@@ -1,6 +1,6 @@
 import HttpServer from "./server/HttpServer";
 import Logger from "./logging/Logger";
-import TypedPool from "./lib/TypedPool";
+import TypedPool, {TypedPoolFactory} from "./lib/TypedPool";
 import IBpmnConverter from "./bpmn/IBpmnConverter";
 import PuppeteerBpmnConverter from "./bpmn/PuppeteerBpmnConverter";
 
@@ -13,21 +13,21 @@ export default class BpmnToSvg {
 
     constructor() {
         this.logger = new Logger();
-        this.converters = new TypedPool<IBpmnConverter>(
-            () => BpmnToSvg.createConverter(), 1, 10, () => {
-                this.http = new HttpServer(this);
-            })
+        this.logger.debug('Using debug log level');
+        this.converters = new TypedPool<IBpmnConverter>(this.converterFactory(), 5, 10, () => {
+            this.http = new HttpServer(this);
+        })
     }
 
     public getLogger(): Logger {
         return this.logger;
     }
 
-    private static createConverter(): Promise<IBpmnConverter> {
-        return new Promise<IBpmnConverter>(async (resolve) => {
-            const implementation = new PuppeteerBpmnConverter();
-            await implementation.buildBrowser();
-            resolve(implementation);
+    private converterFactory(): TypedPoolFactory<IBpmnConverter> {
+        return () => new Promise<IBpmnConverter>(async (resolve) => {
+                const implementation = new PuppeteerBpmnConverter(this);
+                await implementation.buildBrowser();
+                resolve(implementation);
         });
     }
 

@@ -1,4 +1,4 @@
-type TypedPoolFactory<T> = () => Promise<T>
+export type TypedPoolFactory<T> = () => Promise<T>
 
 export default class TypedPool<T> {
 
@@ -16,13 +16,20 @@ export default class TypedPool<T> {
 
         this.factory = factory;
         this.max = max;
-        factory().then(value => {
-            for (let i = 0; i < min; i++) {
+
+        if (min < 1 && callback) {
+            callback();
+            return;
+        }
+
+        let factorized = 0;
+        for (let i = 0; i < min; i++) {
+            factory().then(value => {
                 this.data.set(value, null);
-            }
-            if(callback)
-                callback();
-        })
+                if (++factorized >= min && callback)
+                    callback();
+            });
+        }
     }
 
     public acquire(): Promise<T> {
@@ -33,7 +40,7 @@ export default class TypedPool<T> {
                 if (date == null || date.getMilliseconds() + TypedPool.ELEMENT_EXPIRY_MILLIS > now.getMilliseconds()) {
                     this.data.set(key, now);
                     resolve(key);
-                    break;
+                    return;
                 }
             }
             // No available resource found

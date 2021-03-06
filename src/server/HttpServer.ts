@@ -2,6 +2,8 @@ import express from 'express';
 import BpmnToSvg from "../BpmnToSvg";
 import {IndexPostRoute} from "./routes/IndexPostRoute";
 import {IndexGetRoute} from "./routes/IndexGetRoute";
+import bodyParser from 'body-parser';
+
 
 export default class HttpServer {
 
@@ -18,7 +20,7 @@ export default class HttpServer {
         this.host = process.env.HTTP_HOST || '0.0.0.0';
         this.server = express();
         this.injectLogger();
-        this.rawBodyMiddlware();
+        this.injectBodyParser();
         this.registerRoutes();
         this.bind();
     }
@@ -38,19 +40,13 @@ export default class HttpServer {
         this.server.use(this.application.getLogger().getExpressLogger());
     }
 
-    private rawBodyMiddlware() {
-        this.server.use(function(req, res, next) {
-            req.body = '';
-            req.setEncoding('utf8');
-
-            req.on('data', function(chunk) {
-                req.body += chunk;
-            });
-
-            req.on('end', function() {
-                next();
-            });
-        });
+    private injectBodyParser() {
+        this.server.use(bodyParser.raw({
+            type: [
+                'text/plain',
+                'application/xml',
+                'text/xml'
+            ]
+        }))
     }
-
 }

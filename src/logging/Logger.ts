@@ -25,7 +25,8 @@ export default class Logger {
     constructor() {
         this.logger = winston.createLogger({
             transports: this.transport,
-            format: this.format
+            format: this.format,
+            level: Logger.getLogLevel()
         });
     }
 
@@ -37,20 +38,32 @@ export default class Logger {
         this.logger.error(message, meta);
     }
 
+    public debug(message: string, ...meta: any[]): void {
+        this.logger.debug(message, meta);
+    }
+
     public getExpressLogger(): Handler {
         return expressWinston.logger({
             transports: [this.transport],
             colorize: true,
             format: this.format,
+            level: Logger.getLogLevel(),
             msg: (req, res) => {
                 const substrTo = Math.min(req.url.length, 50);
                 const shortened = req.url.length > 50;
                 const url = req.url.substr(0, substrTo) + (shortened ? '...' : '');
                 return chalk.grey(`${req.method} ${url}`) + (shortened ? chalk.blueBright(' (URL Shortened)') : '') +
                     ` ${res.statusCode} ` +
-                    chalk.grey(`ms`)
+                    chalk.grey(`{{res.responseTime}}ms`)
             }
         });
+    }
+
+    private static getLogLevel(): string {
+        let level = (process.env.LOG_LEVEL || 'info').toLowerCase();
+        if (['error', 'warn', 'info', 'verbose', 'debug', 'silly'].indexOf(level) === -1)
+            level = 'info';
+        return level;
     }
 
 }
